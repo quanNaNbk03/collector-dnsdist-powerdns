@@ -8,7 +8,6 @@ import (
 	"net"
 
 	"collector/internal/decoder"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 // StartTCPListener starts a TCP server on the given address.
@@ -63,14 +62,10 @@ func handleConnection(conn net.Conn) {
 			continue
 		}
 
-		// PoC: Chuyển toàn bộ Protobuf struct thành JSON để xem tất cả các trường
-		jsonBytes, err := protojson.MarshalOptions{
-			EmitUnpopulated: false, // Chỉ in các trường có dữ liệu
-			Multiline:       true,  // Format JSON nhiều dòng cho dễ đọc
-		}.Marshal(msg)
-
+		// PoC: Sử dụng Formatter để chuyển Protobuf struct thành JSON đã được format các trường human-readable
+		jsonBytes, err := decoder.FormatPBDNSMessage(msg)
 		if err != nil {
-			log.Printf("Error converting to JSON: %v", err)
+			log.Printf("Error formatting to JSON: %v", err)
 		} else {
 			log.Printf("====================\nReceived Message (%d bytes):\n%s\n", length, string(jsonBytes))
 		}
