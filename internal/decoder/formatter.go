@@ -34,7 +34,7 @@ var rcodeMap = map[uint32]string{
 }
 
 // FormatPBDNSMessage formats the message for better readability, extracting IP addresses and latency.
-func FormatPBDNSMessage(msg *pb.PBDNSMessage) ([]byte, error) {
+func FormatPBDNSMessage(msg *pb.PBDNSMessage, source string) ([]byte, error) {
 	// Bước 1: Parse toàn bộ cấu trúc Protobuf thành dạng JSON tiêu chuẩn
 	jsonBytes, err := protojson.MarshalOptions{
 		EmitUnpopulated: false,
@@ -88,6 +88,9 @@ func FormatPBDNSMessage(msg *pb.PBDNSMessage) ([]byte, error) {
 			logMap["latencyUs"] = latencyUs
 		}
 	}
+
+	// Đính kèm source (vd: dnsdist, powerdns) để phân biệt
+	logMap["source"] = source
 
 	// Bước 3: Đóng gói lại thành chuỗi JSON đẹp mắt
 	return json.MarshalIndent(logMap, "", "  ")
