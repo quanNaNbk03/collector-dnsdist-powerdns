@@ -6,6 +6,7 @@ import (
 	"net"
 
 	"collector/pb"
+
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -60,6 +61,12 @@ func FormatPBDNSMessage(msg *pb.PBDNSMessage, source string) ([]byte, error) {
 		delete(logMap, "to")
 	}
 
+	// Giải mã serverIdentity thành chuỗi rõ ràng (thay vì base64)
+	if msg.ServerIdentity != nil {
+		logMap["serverID"] = string(msg.GetServerIdentity())
+		delete(logMap, "serverIdentity")
+	}
+
 	// Hiển thị Query Type
 	if msg.Question != nil {
 		qtype := msg.GetQuestion().GetQType()
@@ -82,7 +89,7 @@ func FormatPBDNSMessage(msg *pb.PBDNSMessage, source string) ([]byte, error) {
 		// Tính toán độ trễ: (timeSec - queryTimeSec)*1,000,000 + (timeUsec - queryTimeUsec)
 		queryTimeSec := msg.GetResponse().GetQueryTimeSec()
 		queryTimeUsec := msg.GetResponse().GetQueryTimeUsec()
-		
+
 		if queryTimeSec > 0 {
 			latencyUs := int64(msg.GetTimeSec()-queryTimeSec)*1000000 + int64(msg.GetTimeUsec()) - int64(queryTimeUsec)
 			logMap["latencyUs"] = latencyUs
